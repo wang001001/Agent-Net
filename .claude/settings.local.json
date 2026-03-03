@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(conda activate:*)",
+      "Bash(conda init:*)",
+      "Bash(conda info:*)",
+      "Bash(conda env:*)",
+      "Bash(source:*)",
+      "Bash(echo:*)",
+      "Bash(mysql:*)",
+      "Bash(python:*)"
+    ]
+  }
+}

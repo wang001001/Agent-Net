@@ -1,0 +1,86 @@
+2026-03-03 15:29:25 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["out_of_scope"], "user_queries": {}, "follow_up_message": "你好，我是智能旅行助手，欢迎您向我提问关于天气、机票、火车票、演唱会票、景点推荐或票务预定的问题！"}
+2026-03-03 15:29:25 - SmartVoage - INFO - 清理后响应: {"intents": ["out_of_scope"], "user_queries": {}, "follow_up_message": "你好，我是智能旅行助手，欢迎您向我提问关于天气、机票、火车票、演唱会票、景点推荐或票务预定的问题！"}
+2026-03-03 15:29:25 - SmartVoage - INFO - intents: ['out_of_scope']||user_queries: {}||follow_up_message: 你好，我是智能旅行助手，欢迎您向我提问关于天气、机票、火车票、演唱会票、景点推荐或票务预定的问题！ 
+2026-03-03 15:29:38 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["weather"], "user_queries": {"weather": "北京昌平明天天气怎么样"}, "follow_up_message": ""}
+2026-03-03 15:29:38 - SmartVoage - INFO - 清理后响应: {"intents": ["weather"], "user_queries": {"weather": "北京昌平明天天气怎么样"}, "follow_up_message": ""}
+2026-03-03 15:29:38 - SmartVoage - INFO - intents: ['weather']||user_queries: {'weather': '北京昌平明天天气怎么样'}||follow_up_message:  
+2026-03-03 15:29:38 - SmartVoage - INFO - 处理意图：weather
+2026-03-03 15:29:38 - SmartVoage - INFO - WeatherQueryAssistant 查询：北京昌平明天天气怎么样
+2026-03-03 15:29:46 - SmartVoage - ERROR - 处理异常: HTTPConnectionPool(host='localhost', port=5005): Max retries exceeded with url: /a2a/tasks/send (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002761DC04C00>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2026-03-03 15:30:01 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["concert"], "user_queries": {"concert": "北京昌平明天有什么演唱会门票"}, "follow_up_message": ""}
+2026-03-03 15:30:01 - SmartVoage - INFO - 清理后响应: {"intents": ["concert"], "user_queries": {"concert": "北京昌平明天有什么演唱会门票"}, "follow_up_message": ""}
+2026-03-03 15:30:01 - SmartVoage - INFO - intents: ['concert']||user_queries: {'concert': '北京昌平明天有什么演唱会门票'}||follow_up_message:  
+2026-03-03 15:30:01 - SmartVoage - INFO - 处理意图：concert
+2026-03-03 15:30:01 - SmartVoage - INFO - TicketQueryAssistant 查询：北京昌平明天有什么演唱会门票
+2026-03-03 15:30:09 - SmartVoage - ERROR - 处理异常: HTTPConnectionPool(host='localhost', port=5006): Max retries exceeded with url: /a2a/tasks/send (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002761DC048D0>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2026-03-03 15:30:13 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["flight"], "user_queries": {"flight": "查询北京出发的机票"}, "follow_up_message": ""}
+2026-03-03 15:30:13 - SmartVoage - INFO - 清理后响应: {"intents": ["flight"], "user_queries": {"flight": "查询北京出发的机票"}, "follow_up_message": ""}
+2026-03-03 15:30:13 - SmartVoage - INFO - intents: ['flight']||user_queries: {'flight': '查询北京出发的机票'}||follow_up_message:  
+2026-03-03 15:30:13 - SmartVoage - INFO - 处理意图：flight
+2026-03-03 15:30:13 - SmartVoage - INFO - TicketQueryAssistant 查询：查询北京出发的机票
+2026-03-03 15:40:50 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["out_of_scope"], "user_queries": {}, "follow_up_message": "你好，我是智能旅行助手，可以帮您查询天气、机票、火车票、演唱会票、景点推荐，或帮您预订票务。请问有什么可以帮您？"}
+2026-03-03 15:40:50 - SmartVoage - INFO - 清理后响应: {"intents": ["out_of_scope"], "user_queries": {}, "follow_up_message": "你好，我是智能旅行助手，可以帮您查询天气、机票、火车票、演唱会票、景点推荐，或帮您预订票务。请问有什么可以帮您？"}
+2026-03-03 15:40:50 - SmartVoage - INFO - intents: ['out_of_scope']||user_queries: {}||follow_up_message: 你好，我是智能旅行助手，可以帮您查询天气、机票、火车票、演唱会票、景点推荐，或帮您预订票务。请问有什么可以帮您？ 
+2026-03-03 15:41:11 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["weather"], "user_queries": {"weather": "北京昌平2026年3月3日天气如何"}, "follow_up_message": ""}
+2026-03-03 15:41:11 - SmartVoage - INFO - 清理后响应: {"intents": ["weather"], "user_queries": {"weather": "北京昌平2026年3月3日天气如何"}, "follow_up_message": ""}
+2026-03-03 15:41:11 - SmartVoage - INFO - intents: ['weather']||user_queries: {'weather': '北京昌平2026年3月3日天气如何'}||follow_up_message:  
+2026-03-03 15:41:11 - SmartVoage - INFO - 处理意图：weather
+2026-03-03 15:41:11 - SmartVoage - INFO - WeatherQueryAssistant 查询：北京昌平2026年3月3日天气如何
+2026-03-03 15:41:19 - SmartVoage - ERROR - 调用 WeatherQueryAssistant 失败: HTTPConnectionPool(host='localhost', port=5005): Max retries exceeded with url: /a2a/tasks/send (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000017A16EC0D10>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2026-03-03 15:41:22 - SmartVoage - INFO - 路由到代理：['WeatherQueryAssistant']
+2026-03-03 15:46:00 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["out_of_scope"], "user_queries": {}, "follow_up_message": "你好，我是智能旅行助手，欢迎您向我提问关于天气、机票、火车票、演唱会票、景点推荐或票务预定的问题！"}
+2026-03-03 15:46:00 - SmartVoage - INFO - 清理后响应: {"intents": ["out_of_scope"], "user_queries": {}, "follow_up_message": "你好，我是智能旅行助手，欢迎您向我提问关于天气、机票、火车票、演唱会票、景点推荐或票务预定的问题！"}
+2026-03-03 15:46:00 - SmartVoage - INFO - intents: ['out_of_scope']||user_queries: {}||follow_up_message: 你好，我是智能旅行助手，欢迎您向我提问关于天气、机票、火车票、演唱会票、景点推荐或票务预定的问题！ 
+2026-03-03 15:46:09 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["out_of_scope"], "user_queries": {}, "follow_up_message": "你好，我是智能旅行助手，专注于为您提供天气、机票、火车票、演唱会票、景点推荐及票务预定等旅行相关服务。请问有什么可以帮您的？"}
+2026-03-03 15:46:09 - SmartVoage - INFO - 清理后响应: {"intents": ["out_of_scope"], "user_queries": {}, "follow_up_message": "你好，我是智能旅行助手，专注于为您提供天气、机票、火车票、演唱会票、景点推荐及票务预定等旅行相关服务。请问有什么可以帮您的？"}
+2026-03-03 15:46:09 - SmartVoage - INFO - intents: ['out_of_scope']||user_queries: {}||follow_up_message: 你好，我是智能旅行助手，专注于为您提供天气、机票、火车票、演唱会票、景点推荐及票务预定等旅行相关服务。请问有什么可以帮您的？ 
+2026-03-03 15:46:24 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["weather"], "user_queries": {"weather": "2026-03-04北京天气怎么样"}, "follow_up_message": ""}
+2026-03-03 15:46:24 - SmartVoage - INFO - 清理后响应: {"intents": ["weather"], "user_queries": {"weather": "2026-03-04北京天气怎么样"}, "follow_up_message": ""}
+2026-03-03 15:46:24 - SmartVoage - INFO - intents: ['weather']||user_queries: {'weather': '2026-03-04北京天气怎么样'}||follow_up_message:  
+2026-03-03 15:46:24 - SmartVoage - INFO - 处理意图：weather
+2026-03-03 15:46:24 - SmartVoage - INFO - WeatherQueryAssistant 查询：2026-03-04北京天气怎么样
+2026-03-03 15:46:32 - SmartVoage - ERROR - 调用 WeatherQueryAssistant 失败: HTTPConnectionPool(host='localhost', port=5005): Max retries exceeded with url: /a2a/tasks/send (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000141F8C81040>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2026-03-03 15:46:37 - SmartVoage - INFO - 路由到代理：['WeatherQueryAssistant']
+2026-03-03 15:47:07 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["out_of_scope"], "user_queries": {}, "follow_up_message": "你好，我是智能旅行助手，专注于为您提供天气、机票、火车票、演唱会票、景点推荐及票务预定等旅行相关服务。请问您具体想查询哪天、哪个城市的天气？或者有其他旅行相关需求吗？"}
+2026-03-03 15:47:07 - SmartVoage - INFO - 清理后响应: {"intents": ["out_of_scope"], "user_queries": {}, "follow_up_message": "你好，我是智能旅行助手，专注于为您提供天气、机票、火车票、演唱会票、景点推荐及票务预定等旅行相关服务。请问您具体想查询哪天、哪个城市的天气？或者有其他旅行相关需求吗？"}
+2026-03-03 15:47:07 - SmartVoage - INFO - intents: ['out_of_scope']||user_queries: {}||follow_up_message: 你好，我是智能旅行助手，专注于为您提供天气、机票、火车票、演唱会票、景点推荐及票务预定等旅行相关服务。请问您具体想查询哪天、哪个城市的天气？或者有其他旅行相关需求吗？ 
+2026-03-03 15:47:37 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["weather"], "user_queries": {"weather": "北京2026年3月5日天气"}, "follow_up_message": ""}
+2026-03-03 15:47:37 - SmartVoage - INFO - 清理后响应: {"intents": ["weather"], "user_queries": {"weather": "北京2026年3月5日天气"}, "follow_up_message": ""}
+2026-03-03 15:47:37 - SmartVoage - INFO - intents: ['weather']||user_queries: {'weather': '北京2026年3月5日天气'}||follow_up_message:  
+2026-03-03 15:47:37 - SmartVoage - INFO - 处理意图：weather
+2026-03-03 15:47:37 - SmartVoage - INFO - WeatherQueryAssistant 查询：北京2026年3月5日天气
+2026-03-03 15:47:40 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["weather"], "user_queries": {"weather": "北京昌平2026年3月5日天气"}, "follow_up_message": ""}
+2026-03-03 15:47:40 - SmartVoage - INFO - 清理后响应: {"intents": ["weather"], "user_queries": {"weather": "北京昌平2026年3月5日天气"}, "follow_up_message": ""}
+2026-03-03 15:47:40 - SmartVoage - INFO - intents: ['weather']||user_queries: {'weather': '北京昌平2026年3月5日天气'}||follow_up_message:  
+2026-03-03 15:47:40 - SmartVoage - INFO - 处理意图：weather
+2026-03-03 15:47:40 - SmartVoage - INFO - WeatherQueryAssistant 查询：北京昌平2026年3月5日天气
+2026-03-03 15:47:46 - SmartVoage - ERROR - 调用 WeatherQueryAssistant 失败: HTTPConnectionPool(host='localhost', port=5005): Max retries exceeded with url: /a2a/tasks/send (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000141F8C818C0>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2026-03-03 15:47:49 - SmartVoage - ERROR - 调用 WeatherQueryAssistant 失败: HTTPConnectionPool(host='localhost', port=5005): Max retries exceeded with url: /a2a/tasks/send (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000141F8C81D00>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2026-03-03 15:47:51 - SmartVoage - INFO - 路由到代理：['WeatherQueryAssistant']
+2026-03-03 15:47:55 - SmartVoage - INFO - 路由到代理：['WeatherQueryAssistant']
+2026-03-03 15:48:00 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["weather"], "user_queries": {"weather": "北京2026年3月5日天气"}, "follow_up_message": ""}
+2026-03-03 15:48:00 - SmartVoage - INFO - 清理后响应: {"intents": ["weather"], "user_queries": {"weather": "北京2026年3月5日天气"}, "follow_up_message": ""}
+2026-03-03 15:48:00 - SmartVoage - INFO - intents: ['weather']||user_queries: {'weather': '北京2026年3月5日天气'}||follow_up_message:  
+2026-03-03 15:48:00 - SmartVoage - INFO - 处理意图：weather
+2026-03-03 15:48:00 - SmartVoage - INFO - WeatherQueryAssistant 查询：北京2026年3月5日天气
+2026-03-03 15:48:09 - SmartVoage - ERROR - 调用 WeatherQueryAssistant 失败: HTTPConnectionPool(host='localhost', port=5005): Max retries exceeded with url: /a2a/tasks/send (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000141F8C828B0>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2026-03-03 15:48:15 - SmartVoage - INFO - 路由到代理：['WeatherQueryAssistant']
+2026-03-03 15:48:38 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["weather"], "user_queries": {"weather": "北京2026年3月3日天气"}, "follow_up_message": ""}
+2026-03-03 15:48:38 - SmartVoage - INFO - 清理后响应: {"intents": ["weather"], "user_queries": {"weather": "北京2026年3月3日天气"}, "follow_up_message": ""}
+2026-03-03 15:48:38 - SmartVoage - INFO - intents: ['weather']||user_queries: {'weather': '北京2026年3月3日天气'}||follow_up_message:  
+2026-03-03 15:48:38 - SmartVoage - INFO - 处理意图：weather
+2026-03-03 15:48:38 - SmartVoage - INFO - WeatherQueryAssistant 查询：北京2026年3月3日天气
+2026-03-03 15:48:46 - SmartVoage - ERROR - 调用 WeatherQueryAssistant 失败: HTTPConnectionPool(host='localhost', port=5005): Max retries exceeded with url: /a2a/tasks/send (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000141F8C83130>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2026-03-03 15:48:52 - SmartVoage - INFO - 路由到代理：['WeatherQueryAssistant']
+2026-03-03 15:54:37 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["weather"], "user_queries": {"weather": "查询2026-03-04天气"}, "follow_up_message": ""}
+2026-03-03 15:54:37 - SmartVoage - INFO - 清理后响应: {"intents": ["weather"], "user_queries": {"weather": "查询2026-03-04天气"}, "follow_up_message": ""}
+2026-03-03 15:54:37 - SmartVoage - INFO - intents: ['weather']||user_queries: {'weather': '查询2026-03-04天气'}||follow_up_message:  
+2026-03-03 15:54:37 - SmartVoage - INFO - 处理意图：weather
+2026-03-03 15:54:37 - SmartVoage - INFO - WeatherQueryAssistant 查询：查询2026-03-04天气
+2026-03-03 15:54:45 - SmartVoage - ERROR - 调用 WeatherQueryAssistant 失败: HTTPConnectionPool(host='localhost', port=5005): Max retries exceeded with url: /a2a/tasks/send (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000023E52E2CD10>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2026-03-03 15:54:48 - SmartVoage - INFO - 路由到代理：['WeatherQueryAssistant']
+2026-03-03 15:54:51 - SmartVoage - INFO - 意图识别原始响应: {"intents": ["weather"], "user_queries": {"weather": "2026-03-04 北京天气如何"}, "follow_up_message": ""}
+2026-03-03 15:54:51 - SmartVoage - INFO - 清理后响应: {"intents": ["weather"], "user_queries": {"weather": "2026-03-04 北京天气如何"}, "follow_up_message": ""}
+2026-03-03 15:54:51 - SmartVoage - INFO - intents: ['weather']||user_queries: {'weather': '2026-03-04 北京天气如何'}||follow_up_message:  
+2026-03-03 15:54:51 - SmartVoage - INFO - 处理意图：weather
+2026-03-03 15:54:51 - SmartVoage - INFO - WeatherQueryAssistant 查询：2026-03-04 北京天气如何
