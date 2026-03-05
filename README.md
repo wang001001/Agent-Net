@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # SmartVoyage A2A + MCP 旅行助手
 
 ## 项目简介
