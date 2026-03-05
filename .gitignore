@@ -6,3 +6,5 @@ nul
 __pycache__/
 # IDE settings
 .idea/
+# Environment files (contain secrets)
+.env
