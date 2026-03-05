@@ -26,6 +26,18 @@
 
 ## 🚀 快速开始 (TL;DR)
 
+## 🔧 关键端口与服务
+
+- **A2A 代理端口**：
+  - 天气代理：`5005`
+  - 票务代理：`5006`
+  - 订单代理：`5007`
+- **MCP 微服务端口**：
+  - 天气 MCP：`6001`
+  - 票务 MCP：`6002`
+  - 订单 MCP：`6003`
+- **数据库**：使用 MySQL，初始化脚本位于 `sql/create_table.sql`，示例数据脚本位于 `sql/create_weather_data.sql` 与 `sql/insert_data.sql`。
+
 ```bash
 # 1. 克隆仓库（已在本地，下面直接说明）
 # git clone https://github.com/wang001001/Agent-Net.git
