@@ -2,9 +2,8 @@
 
 Provides:
 - MySQL connection via Config
-- Query tickets with optional ``user_id`` filter
+- Unified endpoint for three ticket categories (train, concert, flight)
 - JSON response using MySQLJSONEncoder
-- ``create_ticket_mcp_server`` to launch FastMCP and register tool
 """
 
 from __future__ import annotations
@@ -26,19 +25,21 @@ app = FastAPI(title="MCP Ticket Server", version="1.0")
 _conf = Config()
 
 
-class TicketService:
-    """业务层：查询 tickets 表。"""
+# ---------- Base Service ----------
+class BaseTicketService:
+    """抽象基类，子类只需要实现 `table_name`（对应数据库表名）。"""
 
     _conf = Config()
+    table_name: str = ""  # placeholder to satisfy type checkers
 
     @staticmethod
     def _get_connection():
         try:
             return mysql.connector.connect(
-                host=TicketService._conf.host,
-                user=TicketService._conf.user,
-                password=TicketService._conf.password,
-                database=TicketService._conf.database,
+                host=BaseTicketService._conf.host,
+                user=BaseTicketService._conf.user,
+                password=BaseTicketService._conf.password,
+                database=BaseTicketService._conf.database,
                 charset="utf8mb4",
             )
         except mysql.connector.Error as err:
@@ -48,7 +49,7 @@ class TicketService:
 
     @classmethod
     def query(cls, user_id: Optional[int] = None) -> List[dict]:
-        sql = "SELECT * FROM tickets WHERE 1=1"
+        sql = f"SELECT * FROM {cls.table_name} WHERE 1=1"
         params: List[Any] = []
         if user_id is not None:
             sql += " AND user_id = %s"
@@ -63,8 +64,6 @@ class TicketService:
                 [desc[0] for desc in cursor.description] if cursor.description else []
             )
             return [dict(zip(columns, row)) for row in rows]
-        except mysql.connector.Error as err:
-            raise HTTPException(status_code=500, detail=str(err))
         finally:
             if cursor is not None:
                 cursor.close()
@@ -72,24 +71,48 @@ class TicketService:
                 conn.close()
 
 
+# ---------- Specific Services ----------
+class TrainTicketService(BaseTicketService):
+    table_name = "train_tickets"
+
+
+class ConcertTicketService(BaseTicketService):
+    table_name = "concert_tickets"
+
+
+class FlightTicketService(BaseTicketService):
+    table_name = "flight_tickets"
+
+
+# ---------- API Endpoint ----------
 @app.get("/ticket")
 def get_ticket(
     user_id: Optional[int] = Query(None, description="User ID to filter tickets"),
+    category: Optional[str] = Query(
+        None,
+        description="Ticket category: train | concert | flight",
+        regex="^(train|concert|flight)$",
+    ),
 ):
-    data = TicketService.query(user_id=user_id)
-    json_str = json.dumps(data, cls=MySQLJSONEncoder)
+    """根据 category 动态查询对应票务表。若未提供 category 返回 400 错误。"""
+    if not category:
+        raise HTTPException(
+            status_code=400, detail="Missing required query param: category"
+        )
+    service_map = {
+        "train": TrainTicketService,
+        "concert": ConcertTicketService,
+        "flight": FlightTicketService,
+    }
+    svc = service_map[category]
+    data = svc.query(user_id=user_id)
+    json_str = json.dumps(data, cls=MySQLJSONEncoder, ensure_ascii=False)
     return Response(content=json_str, media_type="application/json")
 
 
+# ---------- Run Helper ----------
 def create_ticket_mcp_server():
-    """Create and start the Ticket MCP server.
-
-    - Registers ``TicketService.query`` as ``query_ticket`` tool.
-    - Starts FastAPI on port 6002.
-    """
-    # FastMCP registration is optional for this demo. We simply start the FastAPI app.
-    # If FastMCP integration is desired, instantiate FastMCP(name="ticket_server") and register the tool.
-    # For now we just run the server.
+    """启动 Ticket MCP（仅 FastAPI）"""
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=6002)

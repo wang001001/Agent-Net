@@ -4,6 +4,7 @@ from typing import Optional
 
 from config import Config
 
+
 def _create_handler(handler_type: str, log_file: str) -> Optional[logging.Handler]:
     """Factory that returns a configured handler.
 
@@ -68,6 +69,7 @@ def setup_logger(name: str, log_file: str) -> logging.Logger:
             logger.addHandler(file_handler)
 
     return logger
+
 
 # Instantiate a logger for the project using the configuration defined in ``config.py``
 logger = setup_logger("SmartVoage", Config().log_file)

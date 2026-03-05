@@ -1,19 +1,7 @@
-"""A2A Weather Agent Server
-
-该模块实现了一个天气查询代理，使用 LLM 自动生成 SQL，调用 MCP Weather Server 获取数据，
-并把结果以友好的中文文本返回给客户端。
-"""
-
-# -*- coding: utf-8 -*-
-import os, sys, json, asyncio
-# 添加项目根路径，以便导入内部模块
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from config import Config
-from create_logger import logger
-from datetime import datetime
-import pytz
-from mcp import ClientSession
-from mcp.client.streamable_http import streamablehttp_client
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+import json
+import asyncio
 from python_a2a import (
     A2AServer,
     run_server,
@@ -22,244 +10,279 @@ from python_a2a import (
     TaskStatus,
     TaskState,
 )
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
+
+
+from config import Config
+from datetime import datetime
+import pytz
+
+from create_logger import logger
 
 conf = Config()
 
-# ---------------------------------------------------------------------------
-# 初始化 LLM（使用项目配置的模型）
-# ---------------------------------------------------------------------------
+# 初始化LLM
 llm = ChatOpenAI(
     model=conf.model_name,
     base_url=conf.base_url,
-    api_key=conf.api_key,
+    api_key=conf.api_key,  # type: ignore
     temperature=0.1,
 )
 
-# ---------------------------------------------------------------------------
-# 数据库表 schema（用于 Prompt）
-# ---------------------------------------------------------------------------
-TABLE_SCHEMA = """CREATE TABLE IF NOT EXISTS weather_data (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    city VARCHAR(50) NOT NULL COMMENT '城市名称',
-    fx_date DATE NOT NULL COMMENT '预报日期',
-    sunrise TIME COMMENT '日出时间',
-    sunset TIME COMMENT '日落时间',
-    moonrise TIME COMMENT '月升时间',
-    moonset TIME COMMENT '月落时间',
-    moon_phase VARCHAR(20) COMMENT '月相名称',
-    moon_phase_icon VARCHAR(10) COMMENT '月相图标代码',
-    temp_max INT COMMENT '最高温度',
-    temp_min INT COMMENT '最低温度',
-    icon_day VARCHAR(10) COMMENT '白天天气图标代码',
-    text_day VARCHAR(20) COMMENT '白天天气描述',
-    icon_night VARCHAR(10) COMMENT '夜间天气图标代码',
-    text_night VARCHAR(20) COMMENT '夜间天气描述',
-    wind360_day INT COMMENT '白天风向360角度',
-    wind_dir_day VARCHAR(20) COMMENT '白天风向',
-    wind_scale_day VARCHAR(10) COMMENT '白天风力等级',
-    wind_speed_day INT COMMENT '白天风速 (km/h)',
-    wind360_night INT COMMENT '夜间风向360角度',
-    wind_dir_night VARCHAR(20) COMMENT '夜间风向',
-    wind_scale_night VARCHAR(10) COMMENT '夜间风力等级',
-    wind_speed_night INT COMMENT '夜间风速 (km/h)',
-    precip DECIMAL(5,1) COMMENT '降水量 (mm)',
-    uv_index INT COMMENT '紫外线指数',
-    humidity INT COMMENT '相对湿度 (%)',
-    pressure INT COMMENT '大气压强 (hPa)',
-    vis INT COMMENT '能见度 (km)',
-    cloud INT COMMENT '云量 (%)',
-    update_time DATETIME COMMENT '数据更新时间',
-    UNIQUE KEY unique_city_date (city, fx_date)
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='天气数据表';"""
+# 数据表 schema
+table_schema_string = """  # 定义天气数据表的SQL schema字符串 用于Prompt上下文
+CREATE TABLE IF NOT EXISTS weather_data (
+id INT AUTO_INCREMENT PRIMARY KEY,
+city VARCHAR(50) NOT NULL COMMENT '城市名称',
+fx_date DATE NOT NULL COMMENT '预报日期',
+sunrise TIME COMMENT '日出时间',
+sunset TIME COMMENT '日落时间',
+moonrise TIME COMMENT '月升时间',
+moonset TIME COMMENT '月落时间',
+moon_phase VARCHAR(20) COMMENT '月相名称',
+moon_phase_icon VARCHAR(10) COMMENT '月相图标代码',
+temp_max INT COMMENT '最高温度',
+temp_min INT COMMENT '最低温度',
+icon_day VARCHAR(10) COMMENT '白天天气图标代码',
+text_day VARCHAR(20) COMMENT '白天天气描述',
+icon_night VARCHAR(10) COMMENT '夜间天气图标代码',
+text_night VARCHAR(20) COMMENT '夜间天气描述',
+wind360_day INT COMMENT '白天风向360角度',
+wind_dir_day VARCHAR(20) COMMENT '白天风向',
+wind_scale_day VARCHAR(10) COMMENT '白天风力等级',
+wind_speed_day INT COMMENT '白天风速 (km/h)',
+wind360_night INT COMMENT '夜间风向360角度',
+wind_dir_night VARCHAR(20) COMMENT '夜间风向',
+wind_scale_night VARCHAR(10) COMMENT '夜间风力等级',
+wind_speed_night INT COMMENT '夜间风速 (km/h)',
+precip DECIMAL(5,1) COMMENT '降水量 (mm)',
+uv_index INT COMMENT '紫外线指数',
+humidity INT COMMENT '相对湿度 (%)',
+pressure INT COMMENT '大气压强 (hPa)',
+vis INT COMMENT '能见度 (km)',
+cloud INT COMMENT '云量 (%)',
+update_time DATETIME COMMENT '数据更新时间',
+UNIQUE KEY unique_city_date (city, fx_date)
+) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='天气数据表';
+"""
 
-# ---------------------------------------------------------------------------
-# LLM 生成 SQL 的 Prompt（示例中已对大括号进行转义）
-# ---------------------------------------------------------------------------
-SQL_PROMPT = ChatPromptTemplate.from_template(
+# 生成SQL的提示词
+sql_prompt = ChatPromptTemplate.from_template(
     """
-系统提示：你是一个专业的天气SQL生成器，需要从对话历史 (含用户的问题) 中提取关键信息，然后基于 `weather_data` 表生成对应的 SELECT 语句。
-- 当用户想查询天气时，至少需要 **城市** 与 **日期** 信息。如果对话中缺少必要信息，请返回如下 JSON（示例），并在 `message` 中给出明确的追问。
-  {{"status": "input_required", "message": "请提供具体的需要查询的日期，例如 '2025-07-30'"}}
-- 若对话与天气无关，返回类似的 JSON 并提示需要天气相关查询。
-- 当信息齐全时，仅返回纯 SQL（不含任何包装字符）。
+系统提示：你是一个专业的天气SQL生成器 需要从对话历史 (含用户的问题)中提取关键信息 然后基于weather_data表生成SELECT语句 
+- 如果用户需要查天气 则至少需要城市和时间信息 如果对话历史中缺乏必要的信息 可以向其追问 输出格式为json格式 如示例所示；如果对话历史中信息齐全 则输出纯SQL即可 
+- 如果用户问与天气无关的问题 则模仿最后2个示例回复即可 
+
 
 示例：
 - 对话: user: 北京 2025-07-30
-  输出: SELECT city, fx_date, temp_max, temp_min, text_day, text_night, humidity, wind_dir_day, precip FROM weather_data WHERE city = '北京' AND fx_date = '2025-07-30'
+输出: SELECT city, fx_date, temp_max, temp_min, text_day, text_night, humidity, wind_dir_day, precip FROM weather_data WHERE city = '北京' AND fx_date = '2025-07-30'
 - 对话: user: 上海未来3天的天气
-  输出: SELECT city, fx_date, temp_max, temp_min, text_day, text_night, humidity, wind_dir_day, precip FROM weather_data WHERE city = '上海' AND fx_date BETWEEN '2025-07-30' AND '2025-08-01' ORDER BY fx_date
+输出: SELECT city, fx_date, temp_max, temp_min, text_day, text_night, humidity, wind_dir_day, precip FROM weather_data WHERE city = '上海' AND fx_date BETWEEN '2025-07-30' AND '2025-08-01' ORDER BY fx_date
 - 对话: user: 北京的天气
-  输出: {{"status": "input_required", "message": "请提供具体的需要查询的日期，例如 '2025-07-30'"}}
+输出: {{"status": "input_required", "message": "请提供具体的需要查询的日期 例如 '2025-07-30' "}}
+- 对话: user: 今天\nassistant: 请提供城市 \nuser: 北京
+输出: SELECT city, fx_date, temp_max, temp_min, text_day, text_night, humidity, wind_dir_day, precip FROM weather_data WHERE city = '北京' AND fx_date = '2025-07-30'
+- 对话: user: 北京明天的天气\nassistant: 多云 \nuser: 后天呢
+输出: SELECT city, fx_date, temp_max, temp_min, text_day, text_night, humidity, wind_dir_day, precip FROM weather_data WHERE city = '北京' AND fx_date = '2025-08-01'
+- 对话: user: 你好
+输出: {{"status": "input_required", "message": "请提供城市和日期 例如 '北京 2025-07-30' "}}
+- 对话: user: 今天有什么好吃的
+输出: {{"status": "input_required", "message": "请提供天气相关查询 包括城市和日期 "}}
 
-weather_data 表结构：
-{table_schema_string}
-
-对话历史（最新的在最前）：
-{conversation}
-
-当前日期（Asia/Shanghai）: {current_date}
+weather_data表结构：{table_schema_string}
+对话历史: {conversation}
+当前日期: {current_date} (Asia/Shanghai)
     """
 )
 
-# ---------------------------------------------------------------------------
-# 辅助函数 – 通过 MCP 调用查询
-# ---------------------------------------------------------------------------
-async def get_weather(sql: str):
-    """使用 MCP 的 streamable http 接口执行 `query_weather` 工具并返回原始响应。"""
+
+# 定义查询函数
+def get_weather(sql):
+    """Query the weather MCP FastAPI endpoint directly.
+
+    Parses the generated SQL to extract optional ``city`` and ``fx_date`` filters,
+    then performs an HTTP GET request to ``http://127.0.0.1:6001/weather``.
+    Returns the decoded JSON response (or an error dict)."""
     try:
-        async with streamablehttp_client("http://127.0.0.1:8002/mcp") as (read, write, _):
-            async with ClientSession(read, write) as session:
-                await session.initialize()
-                result = await session.call_tool("query_weather", {"sql": sql})
-                # MCP 可能返回 JSON 字符串或对象
-                if isinstance(result, str):
-                    try:
-                        result = json.loads(result)
-                    except Exception:
-                        pass
-                return result
+        import re, urllib.parse, urllib.request
+
+        # Extract filters from the SQL if present
+        city = None
+        fx_date = None
+        if "where" in sql.lower():
+            city_match = re.search(r"city\s*=\s*'([^']+)'", sql, re.IGNORECASE)
+            date_match = re.search(r"fx_date\s*=\s*'([^']+)'", sql, re.IGNORECASE)
+            if city_match:
+                city = city_match.group(1)
+            if date_match:
+                fx_date = date_match.group(1)
+        params = {}
+        if city:
+            params["city"] = city
+        if fx_date:
+            params["date"] = fx_date
+        query = urllib.parse.urlencode(params)
+        url = "http://127.0.0.1:6001/weather"
+        if query:
+            url = f"{url}?{query}"
+        with urllib.request.urlopen(url) as resp:
+            data = resp.read().decode()
+        return json.loads(data)
     except Exception as e:
-        logger.error(f"MCP 查询出错: {e}")
+        logger.error(f"Weather query error: {e}")
         return {"status": "error", "message": str(e)}
 
-# ---------------------------------------------------------------------------
-# AgentCard 定义（描述本代理）
-# ---------------------------------------------------------------------------
+
+# Agent卡片定义
 agent_card = AgentCard(
     name="WeatherQueryAssistant",
-    description="基于 LLM 自动生成 SQL 并调用 MCP Weather Server 的天气查询智能体",
+    description="基于LangChain提供天气查询服务的助手",
     url="http://localhost:5005",
     version="1.0.0",
-    capabilities={"streaming": True, "memory": True},
-    skills=[
+    capabilities={"streaming": True, "memory": True},  # 设置能力：支持流式和内存
+    skills=[  # 定义技能列表
         AgentSkill(
             name="execute weather query",
-            description="执行天气查询，返回天气数据库结果，支持自然语言输入",
+            description="执行天气查询 返回天气数据库结果 支持自然语言输入",
             examples=["北京 2025-07-30 天气", "上海未来5天", "今天天气如何"],
         )
     ],
 )
 
-# ---------------------------------------------------------------------------
-# 主服务器类
-# ---------------------------------------------------------------------------
+
+# 天气查询服务器类
 class WeatherQueryServer(A2AServer):
     def __init__(self):
         super().__init__(agent_card=agent_card)
         self.llm = llm
-        self.sql_prompt = SQL_PROMPT
-        self.schema = TABLE_SCHEMA
+        self.sql_prompt = sql_prompt
+        self.schema = table_schema_string
 
-    # -----------------------------------------------------------------------
-    # 生成 SQL（或输入需求 JSON）
-    # -----------------------------------------------------------------------
+    # 定义生成SQL查询方法 输入对话历史 返回SQL或追问JSON
     def generate_sql_query(self, conversation: str) -> dict:
         try:
+            # 组装链
             chain = self.sql_prompt | self.llm
-            current_date = datetime.now(pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d')
-            raw_output = chain.invoke({
-                "conversation": conversation,
-                "current_date": current_date,
-                "table_schema_string": self.schema,
-            })
-            output = str(getattr(raw_output, "content", raw_output)).strip()
-            logger.info(f"LLM 原始输出: {output}")
-            if output.startswith('{'):
+            # 调用链
+            current_date = datetime.now(pytz.timezone("Asia/Shanghai")).strftime(
+                "%Y-%m-%d"
+            )  # 获取当前日期 格式化为字符串
+            result = chain.invoke(
+                {
+                    "conversation": conversation,
+                    "current_date": current_date,
+                    "table_schema_string": self.schema,
+                }
+            )
+            # Ensure we have a string output
+            output = result.content if hasattr(result, "content") else str(result)
+            output = str(output).strip()
+            logger.info(f"原始 LLM 输出: {output}")
+            # 处理结果 返回字典
+            if output.startswith("{"):  # 检查输出是否以JSON开头
                 return json.loads(output)
             return {"status": "sql", "sql": output}
         except Exception as e:
-            logger.error(f"SQL 生成失败: {e}")
-            return {"status": "input_required", "message": "查询无效，请提供城市和日期"}
+            logger.error(f"SQL生成失败: {str(e)}")
+            return {
+                "status": "input_required",
+                "message": "查询无效 请提供城市和日期 ",
+            }  # 返回追问JSON
 
-    # -----------------------------------------------------------------------
-    # 任务处理逻辑
-    # -----------------------------------------------------------------------
+    # 处理任务：提取输入 生成SQL 调用MCP 格式化结果
     def handle_task(self, task):
-        # 1️⃣ 提取用户输入文字（假设在 task.message.content.text）
-        content = (task.message or {}).get("content", {})
+        # 1 提取输入
+        content = (task.message or {}).get("content", {})  # 从消息中获取内容
+        # 提取conversation 即客户端发起的任务中的query语句
         conversation = content.get("text", "") if isinstance(content, dict) else ""
-        logger.info(f"收到对话: {conversation}")
+        logger.info(f"对话历史及用户问题: {conversation}")
 
         try:
-            gen_res = self.generate_sql_query(conversation)
-            if gen_res.get("status") == "input_required":
-                # 需要追问
+            # 2 基于用户问题生成SQL查询
+            gen_result = self.generate_sql_query(conversation)
+            # 检查是否需要追问 如果是则添加追问消息后返回任务
+            if gen_result["status"] == "input_required":
+                # 追问逻辑 这里是指在无法正常生成sql时 设置任务状态为输入所需 添加追问消息
                 task.status = TaskStatus(
                     state=TaskState.INPUT_REQUIRED,
-                    message={"role": "agent", "content": {"text": gen_res["message"]}},
+                    message={
+                        "role": "agent",
+                        "content": {"text": gen_result["message"]},
+                    },
                 )
                 return task
 
-            sql = gen_res.get("sql")
-            if not sql:
-                task.status = TaskStatus(state=TaskState.FAILED,
-                                          message={"role": "agent", "content": {"text": "未生成有效的 SQL"}})
-                return task
-            logger.info(f"生成的 SQL: {sql}")
-            # 2️⃣ 调用 MCP（异步）
-            mcp_result = asyncio.run(get_weather(sql))
-            logger.info(f"MCP 返回: {mcp_result}")
+            # 否则则提取SQL查询 并进行MCP调用
+            sql_query = gen_result["sql"]  #
+            logger.info(f"生成的SQL查询: {sql_query}")
 
-            # 统一处理返回结构：若为 dict 按约定字段读取；若为 list 直接视为成功数据
-            if isinstance(mcp_result, dict):
-                status = mcp_result.get("status")
-                if status == "success":
-                    data = mcp_result.get("data", [])
-                elif status == "no_data":
-                    # 没有符合条件的天气数据（如查询日期过远）
-                    msg = mcp_result.get("message", "暂无可用的天气数据，可能查询的日期超出预报范围。请尝试查询最近 10 天内的日期。")
-                    task.status = TaskStatus(
-                        state=TaskState.INPUT_REQUIRED,
-                        message={"role": "agent", "content": {"text": msg}},
-                    )
-                    return task
-                else:
-                    msg = mcp_result.get("message", "查询失败，请稍后再试")
-                    task.status = TaskStatus(
-                        state=TaskState.FAILED,
-                        message={"role": "agent", "content": {"text": msg}},
-                    )
-                    return task
-            else:
-                # 假设返回的是 List[dict], 直接使用
-                data = mcp_result
+            # 3 调用MCP
+            weather_result = asyncio.run(get_weather(sql_query))
 
-            # 构造友好文本
-            lines = []
-            for row in data:
-                line = (
-                    f"{row.get('city')} {row.get('fx_date')}: {row.get('text_day')} (夜间 {row.get('text_night')}) "
-                    f"温度 {row.get('temp_min')}-{row.get('temp_max')}°C 湿度 {row.get('humidity')}% "
-                    f"风向 {row.get('wind_dir_day')} 降水 {row.get('precip')}mm"
+            # 4 格式化结果
+            response = (
+                json.loads(weather_result)
+                if isinstance(weather_result, str)
+                else weather_result
+            )
+            logger.info(f"MCP 返回: {response}")
+            # 检查响应状态
+            if response.get("status") == "success":
+                data = response.get("data", [])  # 提取数据列表
+                response_text = "\n".join(
+                    [
+                        f"{d['city']} {d['fx_date']}: {d['text_day']} (夜间 {d['text_night']}) 温度 {d['temp_min']}-{d['temp_max']}°C 湿度 {d['humidity']}% 风向 {d['wind_dir_day']} 降水 {d['precip']}mm"
+                        for d in data
+                    ]
+                )  # 格式化每个数据项为友好文本 连接成多行
+
+                # 设置任务产物为文本部分 并设置任务状态为完成
+                task.artifacts = [{"parts": [{"type": "text", "text": response_text}]}]
+                task.status = TaskStatus(state=TaskState.COMPLETED)
+            elif response.get("status") == "no_data":
+                response_text = response.get("message", "请重新输入查询的城市和日期 ")
+
+                # 设置任务状态为输入所需 添加追问消息
+                task.status = TaskStatus(
+                    state=TaskState.INPUT_REQUIRED,
+                    message={"role": "agent", "content": {"text": response_text}},
                 )
-                lines.append(line)
-            # 当返回空列表时给出更友好的提示
-            if not lines:
-                response_text = "未查询到对应日期的天气数据。该日期可能超出预报范围（通常为最近 7–15 天），请尝试查询更近的日期。"
             else:
-                response_text = "\n".join(lines)
-            task.artifacts = [{"parts": [{"type": "text", "text": response_text}]}]
-            task.status = TaskStatus(state=TaskState.COMPLETED)
+                response_text = response.get(
+                    "message", "查询失败 请重试或提供更多细节 "
+                )
+
+                # 设置任务状态为失败 添加错误信息
+                task.status = TaskStatus(
+                    state=TaskState.FAILED,
+                    message={"role": "agent", "content": {"text": response_text}},
+                )
+
             return task
-        except Exception as e:
-            logger.error(f"任务处理异常: {e}")
+        except Exception as e:  # 捕获异常
+            logger.error(f"查询失败: {str(e)}")
+
+            # 设置任务状态为失败 添加错误信息
             task.status = TaskStatus(
                 state=TaskState.FAILED,
-                message={"role": "agent", "content": {"text": f"查询失败: {e}"}},
+                message={
+                    "role": "agent",
+                    "content": {"text": f"查询失败: {str(e)} 请重试或提供更多细节 "},
+                },
             )
             return task
 
-# ---------------------------------------------------------------------------
-# 运行入口
-# ---------------------------------------------------------------------------
+
 if __name__ == "__main__":
-    server = WeatherQueryServer()
-    print("=== 天气查询服务器信息 ===")
-    print(f"名称: {server.agent_card.name}")
-    print(f"描述: {server.agent_card.description}")
-    print("技能:")
-    for skill in server.agent_card.skills:
+    # 创建并运行服务器
+    # 实例化天气查询服务器
+    weather_server = WeatherQueryServer()
+    # 打印服务器信息
+    print("\n=== 服务器信息 ===")
+    print(f"名称: {weather_server.agent_card.name}")
+    print(f"描述: {weather_server.agent_card.description}")
+    print("\n技能:")
+    for skill in weather_server.agent_card.skills:
         print(f"- {skill.name}: {skill.description}")
-    run_server(server, host="127.0.0.1", port=5005)
+    # 运行服务器
+    run_server(weather_server, host="127.0.0.1", port=5005)  # type: ignore

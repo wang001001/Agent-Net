@@ -1,0 +1,28 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["oh-my-opencode"],
+  "mcp": {},
+  "provider": {
+    "xuansuan": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Xuansuan",
+      "options": {
+        "baseURL": "https://api.xuansuan.top/v1",
+        "apiKey": "sk-Bzs5wQKKMW9KXRXoZUSLK0VrVakRQD6rrwpmeNAkGU92ntSt"
+      },
+      "models": {
+        "claude-opus-4.6": {
+          "id": "claude-opus-4.6",
+          "name": "Claude Opus 4.6",
+          "tool_call": true,
+          "temperature": true,
+          "reasoning": true,
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          }
+        }
+      }
+    }
+  }
+}
