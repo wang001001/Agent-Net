@@ -1,13 +1,5 @@
 # 🚀 SmartVoyage — Agent + MCP 架构模板
 
-
-
-<p align="center">
-  <a href="https://github.com/wang001001/Agent-Net/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/wang001001/Agent-Net/ci.yml?branch=main&style=for-the-badge" alt="CI Status"/></a>
-  <a href="https://github.com/wang001001/Agent-Net/releases"><img src="https://img.shields.io/github/v/release/wang001001/Agent-Net?style=for-the-badge" alt="Release"/></a>
-  <a href="https://github.com/wang001001/Agent-Net/blob/main/LICENSE"><img src="https://img.shields.io/github/license/wang001001/Agent-Net?style=for-the-badge" alt="License"/></a>
-</p>
-
 ---
 
 ## 🗺️ 项目概览
