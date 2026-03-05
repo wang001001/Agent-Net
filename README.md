@@ -1,7 +1,7 @@
-# 🦞 SmartVoyage — AI 旅行助手
+# 🚀 SmartVoyage — AI 驱动的旅行助手
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/openclaw/openclaw/main/docs/assets/openclaw-logo-text.png" alt="SmartVoyage" width="500"/>
+  <img src="https://via.placeholder.com/500x200?text=SmartVoyage" alt="SmartVoyage Banner" width="500"/>
 </p>
 
 <p align="center">
@@ -14,14 +14,14 @@
 
 ## 🗺️ 项目概览
 
-**SmartVoyage** 是一个基于 **Agent‑to‑Agent (A2A)** 协议和 **FastAPI** 微服务的旅行智能助手。用户可通过 **CLI** 或 **Streamlit** 前端提交自然语言查询，系统自动完成：
+**SmartVoyage** 通过 **Agent‑to‑Agent (A2A)** 架构与 **FastAPI** 微服务，提供一个可交互的旅行助理。用户可在 **CLI** 或 **Streamlit** 界面输入自然语言请求，系统将完成以下步骤：
 
-1. **意图识别** – 使用 LLM（OpenAI/Anthropic）将自然语言解析为具体意图（天气、票务、订单等）。
-2. **代理路由** – 根据意图调用对应的 Python‑A2A 代理（Weather、Ticket、Order）。
-3. **MCP 调用** – 代理通过 HTTP 与 FastAPI **MCP**（Micro‑Context‑Protocol）服务交互，获取 MySQL 中的真实数据。
-4. **结果汇总** – 对返回的结构化数据进行摘要、格式化后呈现给用户。
+1. **意图解析** – 使用 LLM（如 OpenAI、Anthropic）把自然语言转化为具体业务意图（天气、票务、订单等）。
+2. **代理调度** – 根据意图启动相应的 Python‑A2A 代理（Weather、Ticket、Order）。
+3. **MCP 通信** – 代理通过 HTTP 与 FastAPI **MCP**（Micro‑Context‑Protocol）服务交互，查询 MySQL 数据库获取真实信息。
+4. **结果呈现** – 将结构化数据进行汇总、格式化后返回给用户。
 
-整个闭环实现了 **自然语言 → 意图识别 → 多代理协作 → 微服务 → 数据持久化**，可作为 AI 助手、聊天机器人或企业内部知识服务的示例。
+该闭环实现了 **自然语言 → 意图解析 → 多代理协作 → 微服务 → 持久化**，可作为 AI 助手或企业内部知识服务的示例项目。
 
 ---
 
