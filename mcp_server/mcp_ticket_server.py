@@ -25,8 +25,10 @@ from utils.format import MySQLJSONEncoder
 app = FastAPI(title="MCP Ticket Server", version="1.0")
 _conf = Config()
 
+
 class TicketService:
     """业务层：查询 tickets 表。"""
+
     _conf = Config()
 
     @staticmethod
@@ -40,7 +42,9 @@ class TicketService:
                 charset="utf8mb4",
             )
         except mysql.connector.Error as err:
-            raise HTTPException(status_code=500, detail=f"Database connection error: {err}")
+            raise HTTPException(
+                status_code=500, detail=f"Database connection error: {err}"
+            )
 
     @classmethod
     def query(cls, user_id: Optional[int] = None) -> List[dict]:
@@ -55,7 +59,9 @@ class TicketService:
             cursor = conn.cursor()
             cursor.execute(sql, tuple(params))
             rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description] if cursor.description else []
+            columns = (
+                [desc[0] for desc in cursor.description] if cursor.description else []
+            )
             return [dict(zip(columns, row)) for row in rows]
         except mysql.connector.Error as err:
             raise HTTPException(status_code=500, detail=str(err))
@@ -65,11 +71,15 @@ class TicketService:
             if conn is not None:
                 conn.close()
 
+
 @app.get("/ticket")
-def get_ticket(user_id: Optional[int] = Query(None, description="User ID to filter tickets")):
+def get_ticket(
+    user_id: Optional[int] = Query(None, description="User ID to filter tickets"),
+):
     data = TicketService.query(user_id=user_id)
     json_str = json.dumps(data, cls=MySQLJSONEncoder)
     return Response(content=json_str, media_type="application/json")
+
 
 def create_ticket_mcp_server():
     """Create and start the Ticket MCP server.
@@ -81,6 +91,5 @@ def create_ticket_mcp_server():
     # If FastMCP integration is desired, instantiate FastMCP(name="ticket_server") and register the tool.
     # For now we just run the server.
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=6002)
-
-
