@@ -1,0 +1,8 @@
+# Ignore private key and temporary files
+id_rsa_temp
+nul
+# Byte‑order mark (Windows) artifacts
+*.pyc
+__pycache__/
+# IDE settings
+.idea/
