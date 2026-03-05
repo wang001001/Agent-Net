@@ -1,8 +1,6 @@
-# 🚀 SmartVoyage — AI 驱动的旅行助手
+# 🚀 SmartVoyage — Agent + MCP 架构模板
 
-<p align="center">
-  <img src="https://via.placeholder.com/500x200?text=SmartVoyage" alt="SmartVoyage Banner" width="500"/>
-</p>
+
 
 <p align="center">
   <a href="https://github.com/wang001001/Agent-Net/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/wang001001/Agent-Net/ci.yml?branch=main&style=for-the-badge" alt="CI Status"/></a>
