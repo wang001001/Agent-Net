@@ -1,4 +1,4 @@
-# 🚀 SmartVoyage — Agent + MCP 架构模板
+# 🚀 Agent + MCP 架构
 
 ---
 
