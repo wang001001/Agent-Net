@@ -4,7 +4,7 @@
 
 ## 🗺️ 项目概览
 
-**SmartVoyage** 通过 **Agent‑to‑Agent (A2A)** 架构与 **FastAPI** 微服务，提供一个可交互的旅行助理。用户可在 **CLI** 或 **Streamlit** 界面输入自然语言请求，系统将完成以下步骤：
+**Agent-Net** 通过 **Agent‑to‑Agent (A2A)** 架构与 **FastAPI** 微服务，提供一个可交互的旅行助理。用户可在 **CLI** 或 **Streamlit** 界面输入自然语言请求，系统将完成以下步骤：
 
 1. **意图解析** – 使用 LLM（如 OpenAI、Anthropic）把自然语言转化为具体业务意图（天气、票务、订单等）。
 2. **代理调度** – 根据意图启动相应的 Python‑A2A 代理（Weather、Ticket、Order）。
